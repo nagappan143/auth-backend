@@ -4,6 +4,14 @@ const userController = require("../controllers/userController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 
+const {createCourses,getAllCourses,updateCourse,deleteCourse} = require("../controllers/userController");
+
+//courses
+router.post("/create", createCourses);
+router.get("/all", getAllCourses);
+router.put("/update/:id", updateCourse);
+router.delete("/delete/:id", deleteCourse)
+
 //users
 router.post("/register", userController.createUser);
 router.post("/login", userController.loginUser);
