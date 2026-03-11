@@ -87,9 +87,19 @@ exports.UpdateUser = async (req, res) => {
       user.phone = phone;
     }
 
-      if (name) {
-      user.name = name;
-    }
+    //   if (name) {
+    //   user.name = name;
+    // }
+
+    if (name) {
+      const nameRegex = /^[A-Za-z0-9]+$/;
+
+      if (!nameRegex.test(name)) {
+            return res.status(400).json({success: false, message: "Name must contain only letters and numbers (no spaces allowed)"});
+     }
+
+    user.name = name;
+}
 
 if(password) {
 
