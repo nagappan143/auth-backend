@@ -1,0 +1,74 @@
+
+
+{
+"email":"na7ddgg@gmail.com",
+"password":"123d4ggg"
+}
+
+
+{
+    "name": "Nagappan555",
+    "email": "nagappan555@gmail.com",
+    "phone": "9876543211",
+    "password": "mypase12t"
+}
+
+{
+    "name": "Nagappan666",
+    "email": "nagappan666@gmail.com",
+    "phone": "9876543211",
+    "password": "mypase12666"
+}
+
+{
+  "loginId": "Nagappan555",
+  "password": "mypase12t"
+}
+
+
+
+create courses
+
+{
+  "courses": [
+    {
+      "title": "Full Stack Development",
+      "instructor": "Nagappan",
+      "price": 4999,
+      "duration": "3 Months"
+    },
+    {
+      "title": "React JS",
+      "instructor": "Kumar",
+      "price": 2999,
+      "duration": "2 Months"
+    }
+  ]
+}
+
+update : 
+
+http://localhost:5000/v1/api/users/update/69b11dc57dea08a8597ae798
+
+{
+  "price": 4500
+}
+
+delete:
+
+http://localhost:5000/v1/api/users/delete/69b120e12a4bfa7b0c26a126
+
+userdelete:
+
+http://localhost:5000/v1/api/users/deleteUser/69afef502614be283d9c9d93
+
+
+userupdate:
+
+http://localhost:5000/v1/api/users/updateUser/69afefaef3ed844c71d59152
+
+{
+    "name": "Nagappan555",
+ "email": "nagappand3441d@gmail.com",
+ "phone": "9876543210"
+}

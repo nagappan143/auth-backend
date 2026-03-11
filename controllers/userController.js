@@ -6,11 +6,11 @@ const bcrypt = require("bcrypt");
 
 const generateTokens = (user) => {
 
-  const accessToken = jwt.sign({id: user._id,email:user.email},process.env.JWT_SECRET,{expiresIn:"30m"})
+  const accessToken = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "30m" })
 
-  const refreshToken = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:"8h"});
+  const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "8h" });
 
-  return{accessToken,refreshToken};
+  return { accessToken, refreshToken };
 }
 
 exports.createUser = async (req, res) => {
@@ -18,7 +18,7 @@ exports.createUser = async (req, res) => {
 
     const { name, email, phone, password } = req.body;
 
-    const existingUser = await User.findOne({ email:email });
+    const existingUser = await User.findOne({ email: email });
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,7 +27,7 @@ exports.createUser = async (req, res) => {
     }
 
     if (existingUser) {
-        return res.status(400).json({ success: false, message: "User already exists"  }); 
+      return res.status(400).json({ success: false, message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 8);
@@ -35,38 +35,121 @@ exports.createUser = async (req, res) => {
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers"}); 
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers" });
     }
 
     const phoneRegex = /^[0-9]{10}$/;
- 
+
     if (!phoneRegex.test(phone)) {
-      return res.status(400).json({ success: false, message: "Phone number must be exactly 10 digits and contain only numbers"});
+      return res.status(400).json({ success: false, message: "Phone number must be exactly 10 digits and contain only numbers" });
     }
 
-    const user = new User({  name,  email,  phone,  password: hashedPassword});
+    const user = new User({ name, email, phone, password: hashedPassword });
 
     const savedUser = await user.save();
 
-    res.status(201).json({  success: true,  message: "User registered successfully",  data: savedUser});
+    res.status(201).json({ success: true, message: "User registered successfully", data: savedUser });
 
   } catch (error) {
-       res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.UpdateUser = async (req, res) => {
+  try {
+
+    const { id } = req.params; 
+
+    const { name, email, phone, password } = req.body;
+
+     const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({success: false, message: "User not found"});
+    }
+
+  if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ success: false, message: "Please provide a valid email address" });
+      }
+
+      user.email = email;
+    }
+
+    if(phone) {
+      const phoneRegex = /^[0-9]{10}$/;
+
+      if(!phoneRegex.test(phone)) {
+        return res.status(400).json({ success: false, message: "Please provide a valid phone number" });
+      }
+      user.phone = phone;
+    }
+
+      if (name) {
+      user.name = name;
+    }
+
+if(password) {
+
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers" });
+    }
+        const hashedPassword = await bcrypt.hash(password, 8);
+        user.password = hashedPassword;
+  }
+
+    // const user = new User({ name, email, phone, password: hashedPassword });
+
+    const savedUser = await user.save();
+
+    res.status(201).json({ success: true, message: "User updated successfully", data: savedUser });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
 exports.createCourses = async (req, res) => {
   try {
 
     const courses = req.body.courses;
 
+
     if (!Array.isArray(courses)) {
-      return res.status(400).json({ success: false, message: "Courses must be an array"});
+      return res.status(400).json({ success: false, message: "Courses must be an array" });
     }
+
+    if (courses.length === 0) {
+      return res.status(400).json({ success: false, message: "Courses array cannot be empty" });
+    }
+
 
     const savedCourses = await Course.insertMany(courses);
 
-    res.status(201).json({ success: true, message: "Courses added successfully", data: savedCourses});
+    res.status(201).json({ success: true, message: "Courses added successfully", data: savedCourses });
 
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -77,31 +160,31 @@ exports.loginUser = async (req, res) => {
 
   try {
 
-   const { loginId, password } = req.body;
+    const { loginId, password } = req.body;
 
-const user = await User.findOne({
-  $or: [
-    { email: loginId },
-    { name: loginId },
-    { phone: loginId }
-  ]
-});
-    if (!user) { 
-        return res.status(404).json({ success: false,  message: "User not found"});
+    const user = await User.findOne({
+      $or: [
+        { email: loginId },
+        { name: loginId },
+        { phone: loginId }
+      ]
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) { 
-        return res.status(401).json({ success: false, message: "Invalid password" });
-     }
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Invalid password" });
+    }
 
     const { accessToken, refreshToken } = generateTokens(user);
 
-    res.status(200).json({ success: true,accessToken, refreshToken, data: user });
+    res.status(200).json({ success: true, accessToken, refreshToken, data: user });
 
-    } catch (error) {  
-        res.status(500).json({ success: false,  message: error.message});
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 
 };
@@ -120,7 +203,7 @@ const user = await User.findOne({
 //         if (err) { 
 //             return res.status(403).json({ success: false, message: "Invalid refresh token" });
 //         }
-        
+
 //         const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30m" } );
 
 //         res.json({ success: true, accessToken });
@@ -137,11 +220,11 @@ exports.getUsers = async (req, res) => {
       return res.status(404).json({ success: false, message: "No users found" });
     }
 
-    res.status(200).json({ success: true, message: "Users fetched successfully", data: users});
+    res.status(200).json({ success: true, message: "Users fetched successfully", data: users });
 
-  }  catch (error) { 
+  } catch (error) {
     res.status(500).json({ success: false, message: "Failed to fetch users", error: error.message });
-   }
+  }
 };
 
 exports.getAllCourses = async (req, res) => {
@@ -152,7 +235,7 @@ exports.getAllCourses = async (req, res) => {
     res.status(200).json({ success: true, count: courses.length, data: courses });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message});
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -170,15 +253,15 @@ exports.updateCourse = async (req, res) => {
     );
 
     if (!updatedCourse) {
-      return res.status(404).json({ success: false, message: "Course not found"});
+      return res.status(404).json({ success: false, message: "Course not found" });
     }
 
     res.status(200).json({
-      success: true,message: "Course updated successfully",data: updatedCourse
+      success: true, message: "Course updated successfully", data: updatedCourse
     });
 
   } catch (error) {
-    res.status(500).json({success: false,message: error.message});
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -190,12 +273,13 @@ exports.deleteCourse = async (req, res) => {
     const deletedCourse = await Course.findByIdAndDelete(id);
 
     if (!deletedCourse) {
-      return res.status(404).json({success: false,message: "Course not found"});
+      return res.status(404).json({ success: false, message: "Course not found" });
     }
 
-    res.status(200).json({success: true,message: "Course deleted successfully"});
+    res.status(200).json({ success: true, message: "Course deleted successfully" });
 
   } catch (error) {
-    res.status(500).json({success: false,message: error.message});
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
