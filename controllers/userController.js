@@ -20,7 +20,7 @@ exports.createUser = async (req, res) => {
 
     const existingUser = await User.findOne({ email: email });
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
 
     if (!emailRegex.test(email)) {
       return res.status(400).json({ success: false, message: "Please provide a valid email address" });
@@ -38,7 +38,7 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers" });
     }
 
-    const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex =/^\+?[0-9\s\-]{10,15}$/;
 
     if (!phoneRegex.test(phone)) {
       return res.status(400).json({ success: false, message: "Phone number must be exactly 10 digits and contain only numbers" });
@@ -70,7 +70,7 @@ exports.UpdateUser = async (req, res) => {
     // }
 
     if (email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
 
       if (!emailRegex.test(email)) {
         return res.status(400).json({ success: false, message: "Please provide a valid email address" });
@@ -80,7 +80,7 @@ exports.UpdateUser = async (req, res) => {
     }
 
     if (phone) {
-      const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex =/^\+?[0-9\s\-]{10,15}$/;
 
       if (!phoneRegex.test(phone)) {
         return res.status(400).json({ success: false, message: "Please provide a valid phone number" });
@@ -112,22 +112,6 @@ exports.UpdateUser = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 8);
       updateData.password = hashedPassword;
     }
-
-    // const user = new User({ name, email, phone, password: hashedPassword });
-
-    // const savedUser = await user.findOneAndUpdate(
-    //   { _id: id },
-    //   {
-    //     $set: {
-    //       email: email
-    //       phone: phone
-
-    //     }
-    //   },
-    //   {
-    //     new: true
-    //   }
-    // );
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: id},
