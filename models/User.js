@@ -13,7 +13,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
 
     },
-
+    active: {
+     type: Boolean,
+     default: true,
+     index: true,
+    },
     password: {
       type: String,
       required: true

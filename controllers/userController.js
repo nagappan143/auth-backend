@@ -58,33 +58,34 @@ exports.createUser = async (req, res) => {
 exports.UpdateUser = async (req, res) => {
   try {
 
-    const { id } = req.params; 
+    const { id } = req.params;
 
     const { name, email, phone, password } = req.body;
 
-     const user = await User.findById(id);
+    // const user = await User.findById({ _id: id, active: true });
+    const updateData = {};
 
-        if (!user) {
-            return res.status(404).json({success: false, message: "User not found"});
-    }
+    // if (!user) {
+    //   return res.status(404).json({ success: false, message: "User not found" });
+    // }
 
-  if (email) {
+    if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailRegex.test(email)) {
         return res.status(400).json({ success: false, message: "Please provide a valid email address" });
       }
 
-      user.email = email;
+    updateData.email = email;
     }
 
-    if(phone) {
+    if (phone) {
       const phoneRegex = /^[0-9]{10}$/;
 
-      if(!phoneRegex.test(phone)) {
+      if (!phoneRegex.test(phone)) {
         return res.status(400).json({ success: false, message: "Please provide a valid phone number" });
       }
-      user.phone = phone;
+      updateData.phone = phone;
     }
 
     //   if (name) {
@@ -95,43 +96,74 @@ exports.UpdateUser = async (req, res) => {
       const nameRegex = /^[A-Za-z0-9]+$/;
 
       if (!nameRegex.test(name)) {
-            return res.status(400).json({success: false, message: "Name must contain only letters and numbers (no spaces allowed)"});
-     }
+        return res.status(400).json({ success: false, message: "Name must contain only letters and numbers (no spaces allowed)" });
+      }
 
-    user.name = name;
-}
-
-if(password) {
-
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers" });
+      updateData.name = name;
     }
-        const hashedPassword = await bcrypt.hash(password, 8);
-        user.password = hashedPassword;
-  }
+
+    if (password) {
+
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers" });
+      }
+      const hashedPassword = await bcrypt.hash(password, 8);
+      updateData.password = hashedPassword;
+    }
 
     // const user = new User({ name, email, phone, password: hashedPassword });
 
-    const savedUser = await user.save();
+    // const savedUser = await user.findOneAndUpdate(
+    //   { _id: id },
+    //   {
+    //     $set: {
+    //       email: email
+    //       phone: phone
 
-    res.status(201).json({ success: true, message: "User updated successfully", data: savedUser });
+    //     }
+    //   },
+    //   {
+    //     new: true
+    //   }
+    // );
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: id},
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(201).json({ success: true, message: "User updated successfully", data: updatedUser });
 
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+
 exports.deleteUser = async (req, res) => {
   try {
 
     const { id } = req.params;
 
-    const deletedUser = await User.findByIdAndDelete(id);
+    // const user = await User.findById({ _id: id, active: true });
+
+    const user = await User.findOne({ _id: id, active: true });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const deletedUser = await User.findOneAndUpdate({ _id: id, active: true }, { $set: { active: false } }, { new: true });
 
     if (!deletedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not deleted" });
     }
 
     res.status(200).json({ success: true, message: "User deleted successfully" });
@@ -140,6 +172,8 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
 
 
 exports.createCourses = async (req, res) => {
