@@ -152,7 +152,6 @@ exports.UserupdateAll = async (req, res) => {
 
     const updateFields = req.body;
 
-    // ❌ empty body check (IMPORTANT)
     if (!Object.keys(updateFields).length) {
       return res.status(400).json({
         success: false,
@@ -160,11 +159,11 @@ exports.UserupdateAll = async (req, res) => {
       });
     }
 
-    // ✅ update all ACTIVE users only (recommended)
+
     const updatedUsers = await User.updateMany(
       { active: true },
       { $set: updateFields },
-      { runValidators: true } // schema validation apply
+      { runValidators: true }
     );
 
     res.status(200).json({
