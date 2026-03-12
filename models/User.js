@@ -25,7 +25,16 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true
-    }
+    },
+    location: {
+    type: String,
+    required: true
+  },
+    metadata: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    default: {}
+  }
   },
   { timestamps: true }
 );

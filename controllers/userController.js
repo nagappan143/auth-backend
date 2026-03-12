@@ -103,12 +103,12 @@ exports.UpdateUser = async (req, res) => {
     }
 
     if (password) {
-
       const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
       if (!passwordRegex.test(password)) {
         return res.status(400).json({ success: false, message: "Password must be at least 8 characters long and contain only letters and numbers" });
       }
+      
       const hashedPassword = await bcrypt.hash(password, 8);
       updateData.password = hashedPassword;
     }
@@ -145,6 +145,42 @@ exports.UpdateUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+exports.UserupdateAll = async (req, res) => {
+  try {
+
+    const updateFields = req.body;
+
+    // ❌ empty body check (IMPORTANT)
+    if (!Object.keys(updateFields).length) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields provided for update"
+      });
+    }
+
+    // ✅ update all ACTIVE users only (recommended)
+    const updatedUsers = await User.updateMany(
+      { active: true },
+      { $set: updateFields },
+      { runValidators: true } // schema validation apply
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Users updated successfully",
+      data: updatedUsers
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 
 
 exports.deleteUser = async (req, res) => {
@@ -189,7 +225,6 @@ exports.createCourses = async (req, res) => {
     if (courses.length === 0) {
       return res.status(400).json({ success: false, message: "Courses array cannot be empty" });
     }
-
 
     const savedCourses = await Course.insertMany(courses);
 

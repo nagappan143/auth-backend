@@ -19,6 +19,7 @@ router.post("/login", userController.loginUser);
 router.get("/users", authMiddleware, userController.getUsers);
 router.put("/updateUser/:id", authMiddleware, userController.UpdateUser);
 router.delete("/deleteUser/:id", authMiddleware, userController.deleteUser);
+router.put("/add-new", userController.UserupdateAll);
 
 
 module.exports = router;
