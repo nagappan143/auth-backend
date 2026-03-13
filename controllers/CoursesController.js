@@ -1,6 +1,7 @@
 const Course = require("../models/Course");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const asyncHandler = require("express-async-handler");
 
 
 
@@ -27,17 +28,29 @@ exports.createCourses = async (req, res) => {
   }
 };
 
-exports.getAllCourses = async (req, res) => {
-  try {
+// exports.getAllCourses = async (req, res) => {
+//   try {
 
-    const courses = await Course.find().sort({ createdAt: -1 });
+//     const courses = await Course.find().sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, count: courses.length, data: courses });
+//     res.status(200).json({ success: true, count: courses.length, data: courses });
 
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+exports.getAllCourses = asyncHandler(async (req, res) => {
+
+  const courses = await Course.find().sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: courses.length,
+    data: courses
+  });
+
+});
 
 
 exports.updateCourse = async (req, res) => {
