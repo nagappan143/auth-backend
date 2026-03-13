@@ -14,9 +14,9 @@ const userSchema = new mongoose.Schema(
 
     },
     active: {
-     type: Boolean,
-     default: true,
-     index: true,
+      type: Boolean,
+      default: true,
+      index: true,
     },
     password: {
       type: String,
@@ -26,11 +26,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+
     metadata: {
-    type: Map,
-    of: mongoose.Schema.Types.Mixed,
-    default: {}
-  }
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {}
+    }
   },
   { timestamps: true }
 );

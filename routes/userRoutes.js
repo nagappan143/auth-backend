@@ -4,7 +4,7 @@ const userController = require("../controllers/userController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-const {createCourses,getAllCourses,updateCourse,deleteCourse} = require("../controllers/userController");
+const {createCourses,getAllCourses,updateCourse,deleteCourse} = require("../controllers/CoursesController");
 
 //courses
 router.post("/create", createCourses);
