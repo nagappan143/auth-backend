@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Course = require("../models/Course");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { default: mongoose } = require("mongoose");
 
 
 const generateTokens = (user) => {
@@ -18,7 +19,11 @@ exports.createUser = async (req, res) => {
 
     const { name, email, phone, password } = req.body;
 
-    const existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ email: email }).lean();
+
+    // console.log(existingUser instanceof mongoose.Document);
+    // console.log("existingUser", existingUser);
+    
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
 
