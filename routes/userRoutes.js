@@ -5,6 +5,22 @@ const userController = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const {createCourses,getAllCourses,updateCourse,deleteCourse} = require("../controllers/CoursesController");
+const {
+  getRoles,
+  getUsersByRole,
+  getUserById, createRole,
+} = require("../controllers/RollsController");
+
+// Roles list
+router.get("/roles", getRoles);
+
+router.post("/createRoles", createRole);
+
+// Users under role
+router.get("/roles/:roleId/users", getUsersByRole);
+
+// Single user details
+router.get("/users/:id", getUserById);
 
 //courses
 router.post("/create", createCourses);

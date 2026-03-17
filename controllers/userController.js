@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const Course = require("../models/Course");
+const Role = require("../models/Rolls");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { default: mongoose } = require("mongoose");
@@ -17,7 +17,7 @@ const generateTokens = (user) => {
 exports.createUser = async (req, res) => {
   try {
 
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, roleId } = req.body;
 
     const existingUser = await User.findOne({ email: email }).lean();
 
@@ -35,6 +35,13 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
+    const roleExists = await Role.findById(roleId);
+
+    if (!roleExists) {
+      return res.status(400).json({success: false,message: "Invalid roleId"});
+    }
+
+
     const hashedPassword = await bcrypt.hash(password, 8);
 
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
@@ -49,7 +56,7 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Phone number must be exactly 10 digits and contain only numbers" });
     }
 
-    const user = new User({ name, email, phone, password: hashedPassword });
+    const user = new User({ name, email, phone, password: hashedPassword,     roleId });
 
     const savedUser = await user.save();
 
@@ -247,6 +254,7 @@ exports.loginUser = async (req, res) => {
 //     });
 
 // };
+
 
 exports.getUsers = async (req, res) => {
   try {
