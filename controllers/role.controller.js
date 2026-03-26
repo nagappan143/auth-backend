@@ -20,7 +20,7 @@ exports.updateRole = async (req, res) => {
       });
     }
 
-    // ✅ check role exists
+    //  check role exists
     const checkRole = await db.query(
       "SELECT * FROM roles WHERE id = $1",
       [id]
@@ -33,19 +33,19 @@ exports.updateRole = async (req, res) => {
       });
     }
 
-    // ✅ update role name
+    //  update role name
     const updatedRole = await db.query(
       "UPDATE roles SET name = $1 WHERE id = $2 RETURNING *",
       [name, id]
     );
 
-    // ✅ delete old sub roles
+    //  delete old sub roles
     await db.query(
       "DELETE FROM sub_roles WHERE role_id = $1",
       [id]
     );
 
-    // ✅ insert new sub roles
+    //  insert new sub roles
     const insertedRoles = [];
 
     for (let r of roles) {
@@ -57,7 +57,7 @@ exports.updateRole = async (req, res) => {
       insertedRoles.push(result.rows[0]);
     }
 
-    // ✅ response
+    //  response
     res.json({
       success: true,
       message: "Role updated successfully",
@@ -75,6 +75,7 @@ exports.updateRole = async (req, res) => {
     });
   }
 };
+
 
 exports.createRole = async (req, res) => {
   try {
@@ -124,6 +125,8 @@ exports.createRole = async (req, res) => {
     });
   }
 };
+
+
 exports.getRoles = async (req, res) => {
   try {
     console.log("GET ROLES API HIT");
@@ -146,7 +149,7 @@ exports.getRoles = async (req, res) => {
       role.roles = subRolesResult.rows;
     }
 
-    // 3️⃣ send response
+    // 3️ send response
     return res.status(200).json({
       success: true,
       count: roles.length,
@@ -162,6 +165,8 @@ exports.getRoles = async (req, res) => {
     });
   }
 };
+
+
 exports.updateRole = async (req, res) => {
   try {
     console.log("Update Role API HIT");
@@ -169,7 +174,7 @@ exports.updateRole = async (req, res) => {
     const { id } = req.params;
     const { name, roles } = req.body;
 
-    // ✅ validation
+    // validation
     if (!id) {
       return res.status(400).json({
         success: false,
@@ -177,7 +182,7 @@ exports.updateRole = async (req, res) => {
       });
     }
 
-    // ✅ update role name
+    // update role name
     const roleResult = await db.query(
       "UPDATE roles SET name=$1 WHERE id=$2 RETURNING *",
       [name, id]
@@ -192,13 +197,13 @@ exports.updateRole = async (req, res) => {
 
     const updatedRole = roleResult.rows[0];
 
-    // ✅ delete old sub roles
+    // delete old sub roles
     await db.query(
       "DELETE FROM sub_roles WHERE role_id=$1",
       [id]
     );
 
-    // ✅ insert new sub roles
+    // insert new sub roles
     const updatedSubRoles = [];
 
     if (Array.isArray(roles)) {
@@ -212,7 +217,7 @@ exports.updateRole = async (req, res) => {
       }
     }
 
-    // ✅ response
+    // response
     res.status(200).json({
       success: true,
       message: "Role updated successfully",
@@ -230,4 +235,126 @@ exports.updateRole = async (req, res) => {
     });
   }
 };
-exports.deleteRole = async (req, res) => { };
+
+exports.updateSubRole = async (req, res) => {
+  try {
+    console.log("Update Sub Role API HIT");
+
+    const { id } = req.params;
+    const { name } = req.body;
+
+    // validation
+    if (!id || !name) {
+      return res.status(400).json({
+        success: false,
+        message: "Sub role id and name required"
+      });
+    }
+
+    // update query
+    const result = await db.query(
+      "UPDATE sub_roles SET name=$1 WHERE id=$2 RETURNING *",
+      [name, id]
+    );
+
+    // check record exists
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Sub role not found"
+      });
+    }
+
+    // success response
+    res.status(200).json({
+      success: true,
+      message: "Sub role updated successfully",
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+exports.deleteRole = async (req, res) => {
+  try {
+    console.log("Delete Role API HIT");
+
+    const { role_id,id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Role id required"
+      });
+    }
+
+    // delete child table first
+    await db.query(
+      "DELETE FROM sub_roles WHERE role_id=$1",
+      [id,role_id]
+    );
+
+    // delete role
+    const result = await db.query(
+      "DELETE FROM roles WHERE id=$1 RETURNING *",
+      [id,role_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Role not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Role deleted successfully",
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.deleteSubRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await db.query(
+      "DELETE FROM sub_roles WHERE id=$1 RETURNING *",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Sub role not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Sub role deleted successfully",
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
