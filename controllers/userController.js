@@ -17,7 +17,7 @@ const generateTokens = (user) => {
 exports.createUser = async (req, res) => {
   try {
 
-    const { name, email, phone, password, roleId } = req.body;
+    const { name, email, phone, password,profileImage} = req.body;
 
     const existingUser = await User.findOne({ email: email }).lean();
 
@@ -35,11 +35,11 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
-    const roleExists = await Role.findById(roleId);
+    // const roleExists = await Role.findById(roleId);
 
-    if (!roleExists) {
-      return res.status(400).json({success: false,message: "Invalid roleId"});
-    }
+    // if (!roleExists) {
+    //   return res.status(400).json({success: false,message: "Invalid roleId"});
+    // }
 
 
     const hashedPassword = await bcrypt.hash(password, 8);
@@ -56,7 +56,7 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Phone number must be exactly 10 digits and contain only numbers" });
     }
 
-    const user = new User({ name, email, phone, password: hashedPassword,     roleId });
+    const user = new User({ name, email, phone, password: hashedPassword,profileImage });
 
     const savedUser = await user.save();
 
@@ -72,7 +72,7 @@ exports.UpdateUser = async (req, res) => {
 
     const { id } = req.params;
 
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password,profileImage } = req.body;
 
     // const user = await User.findById({ _id: id, active: true });
     const updateData = {};
@@ -100,9 +100,9 @@ exports.UpdateUser = async (req, res) => {
       updateData.phone = phone;
     }
 
-    //   if (name) {
-    //   user.name = name;
-    // }
+      if (profileImage) {
+      user.profileImage = profileImage;
+    }
 
     if (name) {
       const nameRegex = /^[A-Za-z0-9]+$/;

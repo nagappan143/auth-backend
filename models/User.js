@@ -20,17 +20,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    
+    profileImage: {
+      type: String,
+      default: ""
+    },
 
     phone: {
       type: String,
       required: true
-    },
-
-    roleId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
-      required: true,
-      index: true
     },
 
     active: {
